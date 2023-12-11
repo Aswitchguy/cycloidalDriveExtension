@@ -87,6 +87,30 @@ def generateEccentricSpacer(rootComp, xzPlane, name, angle, zStart, layers=1):
     extrudes = eccentricSpacer.features.extrudeFeatures
     extrude1 = extrudes.addSimple(eccentricSpacerSketchProfile, adsk.core.ValueInput.createByReal(layerHeight * layers), adsk.fusion.FeatureOperations.NewBodyFeatureOperation)
 
+def generateOutputRollers(rootComp, xzPlane, name, angle, zStart, layers=1):
+
+    global outputRollerHoleRadius, outputRollerNumber, outputRollerSpacing, layerHeight, eccentricity
+
+    outputRollersOcc = rootComp.occurrences.addNewComponent(adsk.core.Matrix3D.create())
+    outputRollers = outputRollersOcc.component
+    outputRollers.name = name
+    outputRollersSketch = outputRollers.sketches.add(xzPlane)
+    outputRollersSketch.isComputeDeferred = True
+
+    outputRollersCircles = outputRollersSketch.sketchCurves.sketchCircles
+
+    for i in range(outputRollerNumber):
+        h = (outputRollerSpacing * math.cos((i * 2 * math.pi) / outputRollerNumber))
+        k = (outputRollerSpacing * math.sin((i * 2 * math.pi) / outputRollerNumber))
+        outputRollersCircles.addByCenterRadius(adsk.core.Point3D.create(h, k, 0), outputRollerHoleRadius - eccentricity)
+    
+    outputRollersSketch.isComputeDeferred = False
+
+    extrudes = outputRollers.features.extrudeFeatures
+    for i in range(outputRollersSketch.profiles.count):
+        outputRollerSketchProfile = outputRollersSketch.profiles.item(i)
+        extrude1 = extrudes.addSimple(outputRollerSketchProfile, adsk.core.ValueInput.createByReal(layerHeight * layers), adsk.fusion.FeatureOperations.NewBodyFeatureOperation)
+
 def generate():
 
     global housingRollerSpacing, housingRollerRadius, housingRollerNumber, outputRollerHoleRadius, outputRollerNumber, outputRollerSpacing, camRadius, camTolerance, camShaftRadius, bearingRadius, layerHeight, layerConfiguration, layerTolerance, eccentricity
@@ -110,11 +134,13 @@ def generate():
     if layerConfiguration == 1:
         generateRotor(rootComp=rootComp, xzPlane=xzPlane, name="rotor1", splinePoints=splinePoints, angle=0, zStart=0)
         generateEccentricSpacer(rootComp=rootComp, xzPlane=xzPlane, name="eccentricSpacer1", angle=0, zStart=0)
+        generateOutputRollers(rootComp=rootComp, xzPlane=xzPlane, name="outputRoller", angle=0, zStart=0)
     elif layerConfiguration == 2:
         generateRotor(rootComp=rootComp, xzPlane=xzPlane, name="rotor1", splinePoints=splinePoints, angle=0, zStart=0)
         generateRotor(rootComp=rootComp, xzPlane=xzPlane, name="rotor2", splinePoints=splinePoints, angle=180, zStart=layerHeight)
         generateEccentricSpacer(rootComp=rootComp, xzPlane=xzPlane, name="eccentricSpacer1", angle=0, zStart=0)
         generateEccentricSpacer(rootComp=rootComp, xzPlane=xzPlane, name="eccentricSpacer2", angle=180, zStart=layerHeight)
+        generateOutputRollers(rootComp=rootComp, xzPlane=xzPlane, name="outputRoller", angle=0, zStart=0, layers=2)
     elif layerConfiguration == 3:
         generateRotor(rootComp=rootComp, xzPlane=xzPlane, name="rotor1", splinePoints=splinePoints, angle=0, zStart=0)
         generateRotor(rootComp=rootComp, xzPlane=xzPlane, name="rotor2", splinePoints=splinePoints, angle=120, zStart=layerHeight)
@@ -122,14 +148,15 @@ def generate():
         generateEccentricSpacer(rootComp=rootComp, xzPlane=xzPlane, name="eccentricSpacer1", angle=0, zStart=0)
         generateEccentricSpacer(rootComp=rootComp, xzPlane=xzPlane, name="eccentricSpacer2", angle=120, zStart=layerHeight)
         generateEccentricSpacer(rootComp=rootComp, xzPlane=xzPlane, name="eccentricSpacer2", angle=240, zStart=layerHeight * 2)
+        generateOutputRollers(rootComp=rootComp, xzPlane=xzPlane, name="outputRoller", angle=0, zStart=0, layers=3)
     elif layerConfiguration == 4:
         generateRotor(rootComp=rootComp, xzPlane=xzPlane, name="rotor1", splinePoints=splinePoints, angle=0, zStart=0)
         generateRotor(rootComp=rootComp, xzPlane=xzPlane, name="rotor2", splinePoints=splinePoints, angle=180, zStart=layerHeight, layers=2)
         generateRotor(rootComp=rootComp, xzPlane=xzPlane, name="rotor3", splinePoints=splinePoints, angle=0, zStart=layerHeight * 3)
-
         generateEccentricSpacer(rootComp=rootComp, xzPlane=xzPlane, name="eccentricSpacer1", angle=0, zStart=0)
         generateEccentricSpacer(rootComp=rootComp, xzPlane=xzPlane, name="eccentricSpacer2", angle=180, zStart=layerHeight, layers=2)
         generateEccentricSpacer(rootComp=rootComp, xzPlane=xzPlane, name="eccentricSpacer3", angle=0, zStart=layerHeight*3)
+        generateOutputRollers(rootComp=rootComp, xzPlane=xzPlane, name="outputRoller", angle=0, zStart=0, layers=3)
     
 
     """
@@ -140,12 +167,6 @@ def generate():
         generateRotor(rootComp=rootComp, xzPlane=xzPlane, name="rotor" + numString, splinePoints=splinePoints, angle=angle, zStart=zStart)
         generateEccentricSpacer(rootComp=rootComp, xzPlane=xzPlane, name="eccentricSpacer" + numString, angle=angle, zStart=zStart)
     """
-        
-    outputRollersOcc = rootComp.occurrences.addNewComponent(adsk.core.Matrix3D.create())
-    outputRollers = outputRollersOcc.component
-    outputRollers.name = "outputRollers"
-    outputRollersSketch = outputRollers.sketches.add(xzPlane)
-    outputRollersSketch.isComputeDeferred = True
 
     housingRollersOcc = rootComp.occurrences.addNewComponent(adsk.core.Matrix3D.create())
     housingRollers = housingRollersOcc.component
@@ -154,32 +175,15 @@ def generate():
     housingRollersSketch.isComputeDeferred = True
     
     
-    outputRollersCircles = outputRollersSketch.sketchCurves.sketchCircles
     housingRollersCircles = housingRollersSketch.sketchCurves.sketchCircles
 
     for i in range(housingRollerNumber):
         h = housingRollerSpacing * math.cos((2 * math.pi * i) / housingRollerNumber)
         k = housingRollerSpacing * math.sin((2 * math.pi * i) / housingRollerNumber)
         housingRollersCircles.addByCenterRadius(adsk.core.Point3D.create(h, k, 0), housingRollerRadius)
-    
-    for i in range(outputRollerNumber):
-        xo = getOffset(eccentricity)[0]
-        yo = getOffset(eccentricity)[1]
-        
-        h = (outputRollerSpacing * math.cos((i * 2 * math.pi) / outputRollerNumber))
-        k = (outputRollerSpacing * math.sin((i * 2 * math.pi) / outputRollerNumber))
-        outputRollersCircles.addByCenterRadius(adsk.core.Point3D.create(h, k, 0), outputRollerHoleRadius - eccentricity)
-    
-    center = getOffset(eccentricity, 0)
 
     # Stop the sketch command and rebuild
-    outputRollersSketch.isComputeDeferred = False
     housingRollersSketch.isComputeDeferred = False
-    
-    extrudes = outputRollers.features.extrudeFeatures
-    for i in range(outputRollersSketch.profiles.count):
-        outputRollerSketchProfile = outputRollersSketch.profiles.item(i)
-        extrude1 = extrudes.addSimple(outputRollerSketchProfile, adsk.core.ValueInput.createByReal(layerHeight * layerConfiguration), adsk.fusion.FeatureOperations.NewBodyFeatureOperation)
 
     extrudes = housingRollers.features.extrudeFeatures
     for i in range(housingRollersSketch.profiles.count):
