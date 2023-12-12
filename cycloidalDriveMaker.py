@@ -127,13 +127,30 @@ def generateHousingRollers(rootComp, xzPlane, name, layers=1):
         h = housingRollerSpacing * math.cos((2 * math.pi * i) / housingRollerNumber)
         k = housingRollerSpacing * math.sin((2 * math.pi * i) / housingRollerNumber)
         housingRollersCircles.addByCenterRadius(adsk.core.Point3D.create(h, k, 0), housingRollerRadius)
+    
+    housingRollersSketch.isComputeDeferred = False
+
+    extrudes = housingRollers.features.extrudeFeatures
+    for i in range(int(housingRollersSketch.profiles.count / 2)):
+        housingRollersSketchProfile = housingRollersSketch.profiles.item(i)
+        extrude1 = extrudes.addSimple(housingRollersSketchProfile, adsk.core.ValueInput.createByReal(layerHeight * layers), adsk.fusion.FeatureOperations.NewBodyFeatureOperation)
+    
+    housingRollersSketch.isComputeDeferred = True
+
+    housingRollersCircles = housingRollersSketch.sketchCurves.sketchCircles
+
+    for i in range(housingRollerNumber):
+        h = housingRollerSpacing * math.cos((2 * math.pi * i) / housingRollerNumber)
+        k = housingRollerSpacing * math.sin((2 * math.pi * i) / housingRollerNumber)
+        housingRollersCircles.addByCenterRadius(adsk.core.Point3D.create(h, k, 0), .155)
 
     housingRollersSketch.isComputeDeferred = False
 
     extrudes = housingRollers.features.extrudeFeatures
     for i in range(housingRollersSketch.profiles.count):
-        housingRollersSketchProfile = housingRollersSketch.profiles.item(i)
-        extrude1 = extrudes.addSimple(housingRollersSketchProfile, adsk.core.ValueInput.createByReal(layerHeight * layers), adsk.fusion.FeatureOperations.NewBodyFeatureOperation)
+        if i % 1 == 0:
+            housingRollersSketchProfile = housingRollersSketch.profiles.item(i)
+            extrude1 = extrudes.addSimple(housingRollersSketchProfile, adsk.core.ValueInput.createByReal(layerHeight * layers), adsk.fusion.FeatureOperations.NewBodyFeatureOperation)
 
 
 def generate():
