@@ -170,7 +170,7 @@ def generate():
     # Enter variables here. E.g. E = 50
     startRange = 0  # Start of range to be evaluated.
     endRange = 2 * math.pi  # End of range to be evaluated.
-    splinePoints = 250  # Number of points that splines are generated.
+    splinePoints = 500  # Number of points that splines are generated.
     # WARNING: Using more than a few hundred points may cause your system to hang.
 
     if layerConfiguration == 1:
